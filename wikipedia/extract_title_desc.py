@@ -1,10 +1,11 @@
 import sys
-import util
-
-util.set_utf8_to_stdio()
+import codecs
+sys.stdin = codecs.getreader('utf_8')(sys.stdin)
+sys.stdout = codecs.getwriter('utf_8')(sys.stdout)
 
 pageinfo = None
 in_text = False
+
 
 def clean_text(text):
     new_text = None
@@ -24,12 +25,12 @@ def clean_text(text):
         if line[-2:] == "}}" and "{{" not in line:
             inside_infobox = False
             continue
-                
+
         if not inside_infobox:
             new_text = line
             break
-    if new_text == None:
-        new_text = "" 
+    if new_text is None:
+        new_text = ""
     return new_text.replace(u'\t', '  ')
 
 
@@ -50,12 +51,9 @@ for line in sys.stdin:
         in_text = True
     elif line == "</page>":
         if pageinfo['ns'] == u'0':
-            pageinfo['text'] = clean_text( pageinfo['buf'] )
+            pageinfo['text'] = clean_text(pageinfo['buf'])
             del pageinfo['buf']
-            print "\t".join( [pageinfo['id'], pageinfo['title'], pageinfo['text']] )
-            # print util.pp( pageinfo )
+            print "\t".join([pageinfo['id'], pageinfo['title'], pageinfo['text']])
     else:
         if in_text:
-            pageinfo['buf'].append( line )
-            
-        
+            pageinfo['buf'].append(line)
