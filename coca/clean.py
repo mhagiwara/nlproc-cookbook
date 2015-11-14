@@ -11,7 +11,7 @@ def split_subtext(text):
     Returns:
         list of split subtext (string)
     """
-    return re.split(r'(?:@ )+| ?<p> ?', text.rstrip())
+    return re.split(r'(?:@ )+| ?</?p> ?| ?<br> ?', text.rstrip())
 
 
 def clean_text(text):
