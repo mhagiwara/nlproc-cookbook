@@ -18,7 +18,7 @@ def read_alignment_file(io):
     spairs = []
     for line in io:
         m = re.match(r'# Sentence pair \((\d+)\) source length (\d+) target length (\d+) '
-                     r'alignment score : ([\.\d]+)', line)
+                     r'alignment score : ([\.\de\-]+)', line)
         assert m, 'Malformed header line: %s' % line
 
         sent_id = int(m.group(1))
