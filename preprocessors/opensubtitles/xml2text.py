@@ -1,3 +1,7 @@
+"""
+Given an OpenSubtitles XML file, output a plain text file, one sentence per line.
+"""
+
 import sys
 import xml.etree.ElementTree as ET
 
@@ -28,4 +32,7 @@ def main():
 
 
 if __name__ == '__main__':
+    import sys
+    import codecs
+    sys.stdout = codecs.getwriter('utf_8')(sys.stdout)
     main()
