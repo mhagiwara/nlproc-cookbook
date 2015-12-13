@@ -1,8 +1,9 @@
 """
 Given a plan text file (output of xml2text.py), clean sentences. Specifically,
     - remove preceding '-'
-    - remove entire lines in brackets [ ]
+    - remove entire lines in brackets [ ] or ()
     - remove entire lines if starts with 'Subtitle by'
+    - remove entire lines if contains '<i>' (monologues)
     - untokenize sentence
 """
 
@@ -49,6 +50,12 @@ def clean_line(line):
         line = line[2:]
 
     if line[0] == '[' or line[-1] == ']':
+        return ''
+
+    if line[0] == '(' or line[-1] == ')':
+        return ''
+
+    if '<i>' in line or '</ i>' in line:
         return ''
 
     if line.startswith('Subtitle by'):
