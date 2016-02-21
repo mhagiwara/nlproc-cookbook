@@ -7,14 +7,16 @@ import argparse
 from collections import defaultdict
 
 
-def read_sentences(filename, target_language, src_language):
+def read_sentences(filename, target_language, src_language, sentences_with_audio=None):
     """
     Read sentences.csv and returns a dict containing sentence information.
 
-    Args:
+    Parameters:
         filename (str): filename of 'sentence.csv'
         target_language (str): target language
         src_language (str): src language
+        sentences_with_audio (set of int): set of sentence ids with audio.
+            If not None, limit the output to this set.
     Returns:
         dict from sentence id (int) to Sentence information, where
         sentence information is a dict with 'sent_id', 'lang', and 'text' keys.
@@ -26,8 +28,29 @@ def read_sentences(filename, target_language, src_language):
         sent_id, lang, text = line.rstrip().split('\t')
         if lang == src_language or lang == target_language:
             sent_id = int(sent_id)
+            if (sentences_with_audio is not None
+                    and lang == target_language
+                    and sent_id not in sentences_with_audio):
+                continue
             sentences[sent_id] = {'sent_id': sent_id, 'lang': lang, 'text': text}
     return sentences
+
+
+def read_sentences_with_audio(filename):
+    """
+    Read sentences_with_audio.cvs file and returns a set of all the sentence IDs with audio.
+
+    Parameters:
+        filename (str): filename of 'sentences_with_audio.csv' file.
+
+    Returns:
+        set of all the sentence ids (int).
+    """
+    sentences_with_audio = set()
+    for line in open(filename):
+        sent_id = int(line.rstrip())
+        sentences_with_audio.add(sent_id)
+    return sentences_with_audio
 
 
 def read_links(filename):
@@ -50,7 +73,7 @@ def generate_translation_pairs(sentences, links, target_language, src_language):
     """
     Given sentences and links, generate a list of sentence pairs in target and source languages.
 
-    Args:
+    Parameters:
         sentences: dict of sentence information (returned by read_sentences())
         links: dict of links information (returned by read_links())
         target_language (str): target language
@@ -74,7 +97,7 @@ def write_tsv(translations):
     """
     Write translations as TSV to stdout.
 
-    Args:
+    Parameters:
         translations (list): list of sentence pairs returned by generate_translation_pairs()
     """
     for sent1, sent2 in translations:
@@ -88,10 +111,17 @@ def main():
     parser.add_argument('--languages', help='pair of [target language]_[from language]')
     parser.add_argument('--sentences', help='filename of sentences.csv')
     parser.add_argument('--links', help='filename of links.csv')
+    parser.add_argument('--audio', help='filename of sentences_with_audio.csv')
     args = parser.parse_args()
     target_language, src_language = args.languages.split('_')
 
-    sentences = read_sentences(args.sentences, target_language, src_language)
+    if args.audio:
+        sentences_with_audio = read_sentences_with_audio(args.audio)
+    else:
+        sentences_with_audio = None
+
+    sentences = read_sentences(args.sentences, target_language, src_language,
+                               sentences_with_audio=sentences_with_audio)
 
     links = read_links(args.links)
 
