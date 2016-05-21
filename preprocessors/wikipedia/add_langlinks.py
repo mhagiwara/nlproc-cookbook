@@ -1,10 +1,25 @@
+"""
+Script to add langlinks information to Wikipedia TSV file.
+
+You need to have MySQL server set up and import the langlinks data before running this script, e.g.,
+
+$ gzcat jawiki-20160501-langlinks.sql.gz | mysql -u username jawiki20160501
+
+This script uses the MySQL-python library, which you can install by:
+
+$ pip install MySQL-python
+"""
+
 import sys
 import MySQLdb
 import codecs
-sys.stdin = codecs.getreader('utf_8')(sys.stdin)
-sys.stdout = codecs.getwriter('utf_8')(sys.stdout)
+
+# Modify this connection info according to your environment.
+DB = MySQLdb.connect(host='localhost', user='root', db='jawiki20160501')
+
 
 def execute_and_fetch(db, query):
+    """A helper method to execute an SQL query and return the result list of row tuples."""
     rows = []
 
     db.query(query)
@@ -15,14 +30,19 @@ def execute_and_fetch(db, query):
         row = res.fetch_row()
     return rows
 
-db = MySQLdb.connect(host='localhost', user='root', db='jawiki20141122')
 
-# print execute_and_fetch(db, 'select * from categorylinks where cl_from = 23 limit 10;')
+def main():
+    """Main entrypoint of this script."""
+    for line in sys.stdin:
+        _id, title, desc = line[:-1].split("\t")
+        sql = "select * from langlinks where ll_from = %s && ll_lang = 'en';" % _id
+        res = execute_and_fetch(DB, sql)
+        langlink = ""
+        if len(res) > 0:
+            langlink = res[0][1] + ":" + res[0][2].decode('utf-8')
+        print "\t".join([_id, langlink, title, desc])
 
-for line in sys.stdin:
-    id, title, desc = line[:-1].split("\t")
-    res = execute_and_fetch(db, "select * from langlinks where ll_from = %s && ll_lang = 'en';" % id)
-    langlink = ""
-    if len(res) > 0:
-        langlink = res[0][1] + ":" + res[0][2].decode('utf-8')
-    print "\t".join([id, langlink, title, desc])
+if __name__ == '__main__':
+    sys.stdin = codecs.getreader('utf_8')(sys.stdin)
+    sys.stdout = codecs.getwriter('utf_8')(sys.stdout)
+    main()
