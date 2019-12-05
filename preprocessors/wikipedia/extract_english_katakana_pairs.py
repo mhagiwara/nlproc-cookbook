@@ -18,8 +18,9 @@ def is_katakana_title(title):
 
 
 def clean_title(title):
-    """Clean"""
-    return re.sub(r' \(.*\)', '', title)
+    """Clean the title by stripping out brackets and lowercasing."""
+    title = re.sub(r' \(.*\)', '', title)
+    return title.lower()
 
 
 def align_titles(en_title, ja_title):

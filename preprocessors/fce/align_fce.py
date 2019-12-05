@@ -61,7 +61,10 @@ TYPE2SIGN = {
 
 def main():
     for line in sys.stdin:
-        code, incorrect, correct = line.strip().split('\t')
+        fields = line.strip().split('\t')
+        if len(fields) != 3:
+            continue
+        code, incorrect, correct = fields
 
         incorrect_tokens = list(incorrect.lower().replace(' ', '_'))
         correct_tokens = list(correct.lower().replace(' ', '_'))
